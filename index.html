@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifikasi PS4</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background: #1a1a1a; color: white; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; color: #0099cc; }
+        .box { background: #2d2d2d; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; background: #383838; border: none; color: white; border-radius: 5px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #0080ff; }
+        .status { margin-top: 15px; padding: 10px; border-radius: 5px; }
+        .info { background: #264d73; }
+        .success { background: #267326; }
+        .error { background: #732626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Pengirim Notifikasi</h1>
+
+        <div class="box">
+            <h3>Judul Notifikasi</h3>
+            <input type="text" id="judul" placeholder="Masukkan judul..." value="Pesan dari Web">
+            
+            <h3>Isi Pesan</h3>
+            <textarea id="pesan" rows="3" placeholder="Tulis pesan...">Halo PS4! 👋</textarea>
+            
+            <button onclick="kirimNotifikasi()">🔔 KIRIM NOTIFIKASI</button>
+            
+            <div id="status" class="status info">Siap — tekan tombol untuk menampilkan notifikasi</div>
+        </div>
+
+        <div class="box">
+            <h3>ℹ️ Info Penting</h3>
+            <p style="margin-top:10px; font-size:14px; color:#aaa;">
+                • Notifikasi muncul di dalam browser PS4<br>
+                • BUKAN notifikasi sistem PS4 asli (bukan muncul di pojok layar)<br>
+                • Untuk notifikasi sistem asli → butuh CFW/HEN (FW 13.50 belum bisa)<br>
+                • Cara pakai: simpan sebagai file .html → buka di browser PS4
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+
+        // Cek dukungan Notification API
+        if (!('Notification' in window)) {
+            statusEl.className = 'status error';
+            statusEl.textContent = '❌ Browser PS4 ini tidak mendukung Notifikasi API';
+        } else {
+            statusEl.className = 'status success';
+            statusEl.textContent = '✅ Browser mendukung Notifikasi API';
+            // Minta izin saat halaman dimuat
+            Notification.requestPermission().then(perm => {
+                console.log('Izin notifikasi:', perm);
+            });
+        }
+
+        function kirimNotifikasi() {
+            const judul = document.getElementById('judul').value || 'Pesan';
+            const pesan = document.getElementById('pesan').value || '(tanpa pesan)';
+
+            statusEl.textContent = '⏳ Mengirim notifikasi...';
+
+            if (!('Notification' in window)) {
+                alert(pesan); // Fallback
+                statusEl.textContent = '⚠️ Memakai alert biasa';
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                // Tampilkan notifikasi
+                const notif = new Notification(judul, {
+                    body: pesan,
+                    icon: 'https://www.playstation.com/etc/designs/playstation/img/ps-logo.png'
+                });
+                notif.onclick = () => { window.focus(); };
+                statusEl.className = 'status success';
+                statusEl.textContent = '✅ Notifikasi ditampilkan!';
+            } else {
+                // Minta izin dulu
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(judul, { body: pesan });
+                        statusEl.className = 'status success';
+                        statusEl.textContent = '✅ Notifikasi ditampilkan!';
+                    } else {
+                        alert(pesan); // Fallback ke alert
+                        statusEl.className = 'status info';
+                        statusEl.textContent = '⚠️ Izin ditolak — tampil sebagai pesan di halaman';
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
